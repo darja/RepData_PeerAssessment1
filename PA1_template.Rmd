@@ -13,6 +13,7 @@ output:
 ```{r, echo=TRUE, warning=FALSE, message=FALSE, error=FALSE}
 library(dplyr)
 library(ggplot2)
+library(gridExtra)
 ```
 
 * Load data from dataset
@@ -30,15 +31,20 @@ data$date <- as.Date(data$date)
 ```{r, echo=TRUE}
 activity_by_date <- data %>% 
     group_by(date) %>%
-    summarize(Steps.Average = mean(steps[!is.na(steps)], na.rm = TRUE), 
-              Steps.Median = median(steps[!is.na(steps)]),
-              Steps.Total = sum(steps[!is.na(steps)]))
+    summarize(Steps.Average = mean(steps, na.rm = TRUE), 
+              Steps.Median = median(steps, na.rm = TRUE),
+              Steps.Total = sum(steps, na.rm = TRUE)) %>%
+    mutate(Steps.Average = ifelse(is.nan(Steps.Average), 0, Steps.Average)) %>%
+    mutate(Steps.Median = ifelse(is.na(Steps.Median), 0, Steps.Average))
 ```
 
 * Histogram for total number of steps per day:
 
 ```{r, echo=TRUE}
-qplot(Steps.Total, data=activity_by_date, main="Total Steps Per Day", xlab="Date", ylab="Total Steps", geom="histogram", bins=60)
+ggplot(activity_by_date, aes(x=date, y=Steps.Total)) + 
+    geom_bar(stat = "identity", fill="salmon", colour="red") +
+    labs(x = "Date", y = "Total Steps") +
+    ggtitle("Total Steps Per Day")
 ```
 
 * Mean and median:
@@ -48,10 +54,12 @@ activity_by_date %>% select(c(date, Steps.Average, Steps.Median))
 ```
 
 ## What is the average daily activity pattern?
+
 ```{r, echo=TRUE}
 activity_by_time <- data %>%
     group_by(interval) %>%
     summarize(Steps.Average = mean(steps[!is.na(steps)]))
+
 qplot(interval, Steps.Average, data=activity_by_time, main="Average Daily Activity", xlab="5-Minute Intervals", ylab="Average Steps", geom="line")
 ```
 
@@ -64,14 +72,40 @@ na_rows <- data[!complete.cases(data),]
 nrow(na_rows)
 ```
 
-Filling empty values
+Filling empty values by average steps for day
 
 ```{r, echo=TRUE}
 data_full <- data
-for (i in 1:nrow(activity_by_date)) {
-    activity = activity_by_date[i,]
-    data_full[is.na(data_full$step) & data_full$date == activity$date, 1] <- round(activity$Steps.Average)
+for (i in 1:nrow(activity_by_time)) {
+    activity = activity_by_time[i,]
+    data_full[is.na(data_full$step) & data_full$interval == activity$interval, 1] <- round(activity$Steps.Average)
 }
+```
+
+Mean and median values for supplemented dataset
+
+```{r, echo=TRUE}
+activity_by_date_full <- data_full %>% 
+    group_by(date) %>%
+    summarize(Steps.Average = mean(steps), 
+              Steps.Median = median(steps),
+              Steps.Total = sum(steps))
+```
+
+Total steps for original and supplemented datasets.
+
+```{r, echo=TRUE}
+p1 <- ggplot(activity_by_date, aes(x=date, y=Steps.Total)) + 
+    geom_bar(stat = "identity", fill="salmon", colour="red") +
+    labs(x = "Date", y = "Total Steps") +
+    ggtitle("Original Dataset")
+
+p2 = ggplot(activity_by_date_full, aes(x=date, y=Steps.Total)) +
+    geom_bar(stat = "identity", fill="paleturquoise1", colour="paleturquoise4") +
+    labs(x = "Date", y = "Total Steps") +
+    ggtitle("Supplemented Dataset")
+
+grid.arrange(p1, p2, ncol=2)
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
