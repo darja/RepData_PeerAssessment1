@@ -8,18 +8,70 @@ output:
 
 ## Loading and preprocessing the data
 
+* Following libraries are required
 
+```{r, echo=TRUE, warning=FALSE, message=FALSE, error=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+* Load data from dataset
+
+```{r, echo=TRUE}
+unzip("activity.zip", "activity.csv")
+data <- read.csv("activity.csv")
+data$date <- as.Date(data$date)
+```
 
 ## What is mean total number of steps taken per day?
 
+* Calculate average, sum and median for steps per day
 
+```{r, echo=TRUE}
+activity_by_date <- data %>% 
+    group_by(date) %>%
+    summarize(Steps.Average = mean(steps[!is.na(steps)], na.rm = TRUE), 
+              Steps.Median = median(steps[!is.na(steps)]),
+              Steps.Total = sum(steps[!is.na(steps)]))
+```
+
+* Histogram for total number of steps per day:
+
+```{r, echo=TRUE}
+qplot(Steps.Total, data=activity_by_date, main="Total Steps Per Day", xlab="Date", ylab="Total Steps", geom="histogram", bins=60)
+```
+
+* Mean and median:
+
+```{r, echo=TRUE}
+activity_by_date %>% select(c(date, Steps.Average, Steps.Median))
+```
 
 ## What is the average daily activity pattern?
-
-
+```{r, echo=TRUE}
+activity_by_time <- data %>%
+    group_by(interval) %>%
+    summarize(Steps.Average = mean(steps[!is.na(steps)]))
+qplot(interval, Steps.Average, data=activity_by_time, main="Average Daily Activity", xlab="5-Minute Intervals", ylab="Average Steps", geom="line")
+```
 
 ## Imputing missing values
 
+Total number of missing values in the dataset
 
+```{r, echo=TRUE}
+na_rows <- data[!complete.cases(data),]
+nrow(na_rows)
+```
+
+Filling empty values
+
+```{r, echo=TRUE}
+data_full <- data
+for (i in 1:nrow(activity_by_date)) {
+    activity = activity_by_date[i,]
+    data_full[is.na(data_full$step) & data_full$date == activity$date, 1] <- round(activity$Steps.Average)
+}
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
