@@ -85,6 +85,19 @@ qplot(interval, Steps.Average, data=activity_by_time, main="Average Daily Activi
 
 ![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
 
+Finding time interval with maximum mean number of steps
+
+
+```r
+activity_by_time_sorted <- activity_by_time %>%
+    arrange(desc(Steps.Average))
+activity_by_time_sorted[1, ]$interval
+```
+
+```
+## [1] 835
+```
+
 ## Imputing missing values
 
 Total number of missing values in the dataset
@@ -137,7 +150,7 @@ total_fill = ggplot(activity_by_date_full, aes(x=date, y=Steps.Total)) +
 grid.arrange(total_original, total_fill, ncol=2)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
 
 Average steps for original and supplemented datasets.
 
@@ -155,7 +168,7 @@ mean_fill = ggplot(activity_by_date_full, aes(x=date, y=Steps.Average)) +
 grid.arrange(mean_original, mean_fill, ncol=2)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 Median steps for original and supplemented datasets.
 
@@ -174,7 +187,7 @@ median_fill = ggplot(activity_by_date_full, aes(x=date, y=Steps.Median)) +
 grid.arrange(median_original, median_fill, ncol=2)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
@@ -207,4 +220,4 @@ steps_weekday <- ggplot(weekday_activity, aes(x=interval, y=Steps.Average)) +
 grid.arrange(steps_weekday, steps_weekend, nrow=2)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png)<!-- -->

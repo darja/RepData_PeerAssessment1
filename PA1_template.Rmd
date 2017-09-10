@@ -63,6 +63,14 @@ activity_by_time <- data %>%
 qplot(interval, Steps.Average, data=activity_by_time, main="Average Daily Activity", xlab="5-Minute Intervals", ylab="Average Steps", geom="line")
 ```
 
+Finding time interval with maximum mean number of steps
+
+```{r, echo=TRUE}
+activity_by_time_sorted <- activity_by_time %>%
+    arrange(desc(Steps.Average))
+activity_by_time_sorted[1, ]$interval
+```
+
 ## Imputing missing values
 
 Total number of missing values in the dataset
