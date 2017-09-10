@@ -26,31 +26,35 @@ data$date <- as.Date(data$date)
 
 ## What is mean total number of steps taken per day?
 
-* Calculate average, sum and median for steps per day
+Average, sum and median for steps per day
 
 ```{r, echo=TRUE}
 activity_by_date <- data %>% 
     group_by(date) %>%
-    summarize(Steps.Average = mean(steps, na.rm = TRUE), 
-              Steps.Median = median(steps, na.rm = TRUE),
-              Steps.Total = sum(steps, na.rm = TRUE)) %>%
-    mutate(Steps.Average = ifelse(is.nan(Steps.Average), 0, Steps.Average)) %>%
-    mutate(Steps.Median = ifelse(is.na(Steps.Median), 0, Steps.Average))
+    summarize(Steps.Total = sum(steps, na.rm = TRUE))
 ```
 
-* Histogram for total number of steps per day:
+Histogram for total number of steps per day:
 
 ```{r, echo=TRUE}
 ggplot(activity_by_date, aes(x=date, y=Steps.Total)) + 
-    geom_bar(stat = "identity", fill="salmon", colour="red") +
+    geom_histogram(stat = "identity", fill="salmon", colour="red") +
     labs(x = "Date", y = "Total Steps") +
     ggtitle("Total Steps Per Day")
 ```
 
-* Mean and median:
+Mean total number of steps
 
 ```{r, echo=TRUE}
-activity_by_date %>% select(c(date, Steps.Average, Steps.Median))
+mean_original <- mean(activity_by_date$Steps.Total)
+mean_original
+```
+
+Median total number of steps
+
+```{r, echo=TRUE}
+median_original <- median(activity_by_date$Steps.Total)
+median_original
 ```
 
 ## What is the average daily activity pattern?
@@ -80,7 +84,7 @@ na_rows <- data[!complete.cases(data),]
 nrow(na_rows)
 ```
 
-Filling empty values by average steps per interval
+Empty values are replaced by average number of steps for corresponding interval
 
 ```{r, echo=TRUE}
 data_full <- data
@@ -95,9 +99,7 @@ Mean and median values for supplemented dataset
 ```{r, echo=TRUE}
 activity_by_date_full <- data_full %>% 
     group_by(date) %>%
-    summarize(Steps.Average = mean(steps, na.rm = TRUE), 
-              Steps.Median = median(steps, na.rm = TRUE),
-              Steps.Total = sum(steps, na.rm = TRUE))
+    summarize(Steps.Total = sum(steps, na.rm = TRUE))
 ```
 
 Total steps for original and supplemented datasets.
@@ -115,35 +117,18 @@ total_fill = ggplot(activity_by_date_full, aes(x=date, y=Steps.Total)) +
 grid.arrange(total_original, total_fill, ncol=2)
 ```
 
-Average steps for original and supplemented datasets.
+Average total steps:
 
 ```{r, echo=TRUE}
-mean_original <- ggplot(activity_by_date, aes(x=date, y=Steps.Average)) + 
-    geom_bar(stat = "identity", fill="salmon", colour="red") +
-    labs(x = "Date", y = "Average Steps") +
-    ggtitle("Original")
-
-mean_fill = ggplot(activity_by_date_full, aes(x=date, y=Steps.Average)) +
-    geom_bar(stat = "identity", fill="paleturquoise1", colour="paleturquoise4") +
-    labs(x = "Date", y = "Average Steps") +
-    ggtitle("Supplemented")
-grid.arrange(mean_original, mean_fill, ncol=2)
+mean_full <- mean(activity_by_date_full$Steps.Total)
+data.frame(c(mean_full, mean_original), row.names = c("Supplemented", "Original"))
 ```
 
-Median steps for original and supplemented datasets.
+Median of total steps:
 
 ```{r, echo=TRUE}
-median_original <- ggplot(activity_by_date, aes(x=date, y=Steps.Median)) + 
-    geom_bar(stat = "identity", fill="salmon", colour="red") +
-    labs(x = "Date", y = "Median Steps") +
-    ggtitle("Original")
-
-median_fill = ggplot(activity_by_date_full, aes(x=date, y=Steps.Median)) +
-    geom_bar(stat = "identity", fill="paleturquoise1", colour="paleturquoise4") +
-    labs(x = "Date", y = "Median Steps") +
-    ggtitle("Supplemented")
-
-grid.arrange(median_original, median_fill, ncol=2)
+median_full <- median(activity_by_date_full$Steps.Total)
+data.frame(c(median_full, median_original), row.names = c("Supplemented", "Original"))
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?

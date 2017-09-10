@@ -23,53 +23,53 @@ data$date <- as.Date(data$date)
 
 ## What is mean total number of steps taken per day?
 
-* Calculate average, sum and median for steps per day
+Average, sum and median for steps per day
 
 
 ```r
 activity_by_date <- data %>% 
     group_by(date) %>%
-    summarize(Steps.Average = mean(steps, na.rm = TRUE), 
-              Steps.Median = median(steps, na.rm = TRUE),
-              Steps.Total = sum(steps, na.rm = TRUE)) %>%
-    mutate(Steps.Average = ifelse(is.nan(Steps.Average), 0, Steps.Average)) %>%
-    mutate(Steps.Median = ifelse(is.na(Steps.Median), 0, Steps.Average))
+    summarize(Steps.Total = sum(steps, na.rm = TRUE))
 ```
 
-* Histogram for total number of steps per day:
+Histogram for total number of steps per day:
 
 
 ```r
 ggplot(activity_by_date, aes(x=date, y=Steps.Total)) + 
-    geom_bar(stat = "identity", fill="salmon", colour="red") +
+    geom_histogram(stat = "identity", fill="salmon", colour="red") +
     labs(x = "Date", y = "Total Steps") +
     ggtitle("Total Steps Per Day")
 ```
 
+```
+## Warning: Ignoring unknown parameters: binwidth, bins, pad
+```
+
 ![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
 
-* Mean and median:
+Mean total number of steps
 
 
 ```r
-activity_by_date %>% select(c(date, Steps.Average, Steps.Median))
+mean_original <- mean(activity_by_date$Steps.Total)
+mean_original
 ```
 
 ```
-## # A tibble: 61 x 3
-##          date Steps.Average Steps.Median
-##        <date>         <dbl>        <dbl>
-##  1 2012-10-01       0.00000      0.00000
-##  2 2012-10-02       0.43750      0.43750
-##  3 2012-10-03      39.41667     39.41667
-##  4 2012-10-04      42.06944     42.06944
-##  5 2012-10-05      46.15972     46.15972
-##  6 2012-10-06      53.54167     53.54167
-##  7 2012-10-07      38.24653     38.24653
-##  8 2012-10-08       0.00000      0.00000
-##  9 2012-10-09      44.48264     44.48264
-## 10 2012-10-10      34.37500     34.37500
-## # ... with 51 more rows
+## [1] 9354.23
+```
+
+Median total number of steps
+
+
+```r
+median_original <- median(activity_by_date$Steps.Total)
+median_original
+```
+
+```
+## [1] 10395
 ```
 
 ## What is the average daily activity pattern?
@@ -83,7 +83,7 @@ activity_by_time <- data %>%
 qplot(interval, Steps.Average, data=activity_by_time, main="Average Daily Activity", xlab="5-Minute Intervals", ylab="Average Steps", geom="line")
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 Finding time interval with maximum mean number of steps
 
@@ -112,7 +112,7 @@ nrow(na_rows)
 ## [1] 2304
 ```
 
-Filling empty values by average steps for day
+Empty values are replaced by average number of steps for corresponding interval
 
 
 ```r
@@ -129,9 +129,7 @@ Mean and median values for supplemented dataset
 ```r
 activity_by_date_full <- data_full %>% 
     group_by(date) %>%
-    summarize(Steps.Average = mean(steps, na.rm = TRUE), 
-              Steps.Median = median(steps, na.rm = TRUE),
-              Steps.Total = sum(steps, na.rm = TRUE))
+    summarize(Steps.Total = sum(steps, na.rm = TRUE))
 ```
 
 Total steps for original and supplemented datasets.
@@ -150,44 +148,35 @@ total_fill = ggplot(activity_by_date_full, aes(x=date, y=Steps.Total)) +
 grid.arrange(total_original, total_fill, ncol=2)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-11-1.png)<!-- -->
-
-Average steps for original and supplemented datasets.
-
-
-```r
-mean_original <- ggplot(activity_by_date, aes(x=date, y=Steps.Average)) + 
-    geom_bar(stat = "identity", fill="salmon", colour="red") +
-    labs(x = "Date", y = "Average Steps") +
-    ggtitle("Original")
-
-mean_fill = ggplot(activity_by_date_full, aes(x=date, y=Steps.Average)) +
-    geom_bar(stat = "identity", fill="paleturquoise1", colour="paleturquoise4") +
-    labs(x = "Date", y = "Average Steps") +
-    ggtitle("Supplemented")
-grid.arrange(mean_original, mean_fill, ncol=2)
-```
-
 ![](PA1_template_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
-Median steps for original and supplemented datasets.
+Average total steps:
 
 
 ```r
-median_original <- ggplot(activity_by_date, aes(x=date, y=Steps.Median)) + 
-    geom_bar(stat = "identity", fill="salmon", colour="red") +
-    labs(x = "Date", y = "Median Steps") +
-    ggtitle("Original")
-
-median_fill = ggplot(activity_by_date_full, aes(x=date, y=Steps.Median)) +
-    geom_bar(stat = "identity", fill="paleturquoise1", colour="paleturquoise4") +
-    labs(x = "Date", y = "Median Steps") +
-    ggtitle("Supplemented")
-
-grid.arrange(median_original, median_fill, ncol=2)
+mean_full <- mean(activity_by_date_full$Steps.Total)
+data.frame(c(mean_full, mean_original), row.names = c("Supplemented", "Original"))
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-13-1.png)<!-- -->
+```
+##              c.mean_full..mean_original.
+## Supplemented                    10765.64
+## Original                         9354.23
+```
+
+Median of total steps:
+
+
+```r
+median_full <- median(activity_by_date_full$Steps.Total)
+data.frame(c(median_full, median_original), row.names = c("Supplemented", "Original"))
+```
+
+```
+##              c.median_full..median_original.
+## Supplemented                           10762
+## Original                               10395
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
@@ -220,4 +209,4 @@ steps_weekday <- ggplot(weekday_activity, aes(x=interval, y=Steps.Average)) +
 grid.arrange(steps_weekday, steps_weekend, nrow=2)
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
+![](PA1_template_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
