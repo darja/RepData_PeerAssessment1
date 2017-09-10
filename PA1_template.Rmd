@@ -87,25 +87,83 @@ Mean and median values for supplemented dataset
 ```{r, echo=TRUE}
 activity_by_date_full <- data_full %>% 
     group_by(date) %>%
-    summarize(Steps.Average = mean(steps), 
-              Steps.Median = median(steps),
-              Steps.Total = sum(steps))
+    summarize(Steps.Average = mean(steps, na.rm = TRUE), 
+              Steps.Median = median(steps, na.rm = TRUE),
+              Steps.Total = sum(steps, na.rm = TRUE))
 ```
 
 Total steps for original and supplemented datasets.
 
 ```{r, echo=TRUE}
-p1 <- ggplot(activity_by_date, aes(x=date, y=Steps.Total)) + 
+total_original <- ggplot(activity_by_date, aes(x=date, y=Steps.Total)) + 
     geom_bar(stat = "identity", fill="salmon", colour="red") +
     labs(x = "Date", y = "Total Steps") +
-    ggtitle("Original Dataset")
+    ggtitle("Original")
 
-p2 = ggplot(activity_by_date_full, aes(x=date, y=Steps.Total)) +
+total_fill = ggplot(activity_by_date_full, aes(x=date, y=Steps.Total)) +
     geom_bar(stat = "identity", fill="paleturquoise1", colour="paleturquoise4") +
     labs(x = "Date", y = "Total Steps") +
-    ggtitle("Supplemented Dataset")
+    ggtitle("Supplemented")
+grid.arrange(total_original, total_fill, ncol=2)
+```
 
-grid.arrange(p1, p2, ncol=2)
+Average steps for original and supplemented datasets.
+
+```{r, echo=TRUE}
+mean_original <- ggplot(activity_by_date, aes(x=date, y=Steps.Average)) + 
+    geom_bar(stat = "identity", fill="salmon", colour="red") +
+    labs(x = "Date", y = "Average Steps") +
+    ggtitle("Original")
+
+mean_fill = ggplot(activity_by_date_full, aes(x=date, y=Steps.Average)) +
+    geom_bar(stat = "identity", fill="paleturquoise1", colour="paleturquoise4") +
+    labs(x = "Date", y = "Average Steps") +
+    ggtitle("Supplemented")
+grid.arrange(mean_original, mean_fill, ncol=2)
+```
+
+Median steps for original and supplemented datasets.
+
+```{r, echo=TRUE}
+median_original <- ggplot(activity_by_date, aes(x=date, y=Steps.Median)) + 
+    geom_bar(stat = "identity", fill="salmon", colour="red") +
+    labs(x = "Date", y = "Median Steps") +
+    ggtitle("Original")
+
+median_fill = ggplot(activity_by_date_full, aes(x=date, y=Steps.Median)) +
+    geom_bar(stat = "identity", fill="paleturquoise1", colour="paleturquoise4") +
+    labs(x = "Date", y = "Median Steps") +
+    ggtitle("Supplemented")
+
+grid.arrange(median_original, median_fill, ncol=2)
 ```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```{r, echo=TRUE}
+data <- data %>% mutate(Day = ifelse(weekdays(date, abbreviate = T) %in% c("Sat", "Sun"), "weekend", "weekday"))
+activity_by_time_day <- data %>%
+    group_by(interval, Day) %>%
+    summarize(Steps.Average = mean(steps[!is.na(steps)]))
+
+weekend_activity <- activity_by_time_day[activity_by_time_day$Day == "weekend",]
+weekday_activity <- activity_by_time_day[activity_by_time_day$Day == "weekday",]
+
+steps_weekend <- ggplot(weekend_activity, aes(x=interval, y=Steps.Average)) + 
+    geom_line() +
+    labs(x = "Interval", y = "Average Steps") +
+    ggtitle("Weekend")
+
+
+steps_weekend <- ggplot(weekend_activity, aes(x=interval, y=Steps.Average)) + 
+    geom_line() +
+    labs(x = "Interval", y = "Average Steps") +
+    ggtitle("Weekend")
+
+steps_weekday <- ggplot(weekday_activity, aes(x=interval, y=Steps.Average)) + 
+    geom_line() +
+    labs(x = "Interval", y = "Average Steps") +
+    ggtitle("Weekday")
+
+grid.arrange(steps_weekday, steps_weekend, nrow=2)
+```
