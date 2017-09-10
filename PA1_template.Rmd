@@ -80,7 +80,7 @@ na_rows <- data[!complete.cases(data),]
 nrow(na_rows)
 ```
 
-Filling empty values by average steps for day
+Filling empty values by average steps per interval
 
 ```{r, echo=TRUE}
 data_full <- data
